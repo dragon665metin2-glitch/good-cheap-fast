@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Good - Cheap - Fast</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      width: 320px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    input[type="range"] {
+      width: 220px;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .status {
+      margin-top: 2rem;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .active {
+      color: #60a5fa;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Good – Cheap – Fast</h1>
+
+  <div class="slider-container">
+    <div class="slider-row">
+      <span>Good</span>
+      <input type="range" id="good" min="0" max="100" step="1" value="0">
+    </div>
+    <div class="slider-row">
+      <span>Cheap</span>
+      <input type="range" id="cheap" min="0" max="100" step="1" value="0">
+    </div>
+    <div class="slider-row">
+      <span>Fast</span>
+      <input type="range" id="fast" min="0" max="100" step="1" value="0">
+    </div>
+  </div>
+
+  <div class="status">
+    <p>Escolhe apenas dois 😅</p>
+    <p>Ativos: <span id="active" class="active">Nenhum</span></p>
+  </div>
+
+  <script>
+    const sliders = {
+      good: document.getElementById("good"),
+      cheap: document.getElementById("cheap"),
+      fast: document.getElementById("fast"),
+    };
+
+    // função para atualizar texto
+    function updateActive() {
+      const active = Object.entries(sliders)
+        .filter(([_, el]) => el.value > 50)
+        .map(([name]) => name.charAt(0).toUpperCase() + name.slice(1));
+      document.getElementById("active").textContent = active.length ? active.join(", ") : "Nenhum";
+    }
+
+    // animação suave de retorno
+    function animateTo(name, targetValue, duration = 400) {
+      const el = sliders[name];
+      const start = parseFloat(el.value);
+      const diff = targetValue - start;
+      const startTime = performance.now();
+
+      function animate(time) {
+        const t = Math.min((time - startTime) / duration, 1);
+        el.value = start + diff * t;
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          updateActive();
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function handleChange(changed) {
+      const good = parseFloat(sliders.good.value);
+      const cheap = parseFloat(sliders.cheap.value);
+      const fast = parseFloat(sliders.fast.value);
+
+      const isGood = good > 50;
+      const isCheap = cheap > 50;
+      const isFast = fast > 50;
+
+      // Lógica de combinações válidas:
+      // Good + Cheap
+      // Fast + Good
+      // Cheap + Fast
+      if (changed === "good" && isGood && isCheap && isFast) {
+        // mantém Good + Fast
+        animateTo("cheap", 0);
+      } else if (changed === "cheap" && isGood && isCheap && isFast) {
+        // mantém Cheap + Fast
+        animateTo("good", 0);
+      } else if (changed === "fast" && isGood && isCheap && isFast) {
+        // mantém Good + Fast
+        animateTo("cheap", 0);
+      }
+
+      updateActive();
+    }
+
+    Object.keys(sliders).forEach((name) => {
+      sliders[name].addEventListener("input", () => handleChange(name));
+    });
+
+    updateActive();
+  </script>
+</body>
+</html>
+
